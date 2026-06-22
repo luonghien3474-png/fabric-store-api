@@ -7,7 +7,7 @@ const router = express.Router();
 //  ENDPOINTS
 //
 router.get("/", getItems);
-router.Item("/", createItem);
+router.post("/", createItem);
 router.put("/:id", updateItem);
 router.delete("/:id", deleteItem);
 
