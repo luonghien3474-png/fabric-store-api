@@ -16,7 +16,38 @@ export const getItems = async (req, res) => {
         });
     }
 };
+export const getItem = async (req, res) => {
+    const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid Item Id"
+        });
+    }
+
+    try {
+        const item = await Item.findById(id);
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: item
+        });
+    } catch (error) {
+        console.error("Error fetching item:", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
 export const createItem = async (req, res) => {
     const {
         name,
