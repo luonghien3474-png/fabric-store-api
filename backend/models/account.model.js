@@ -1,34 +1,50 @@
-import mongoose from 'mongoose';
+const mongoose = require("mongoose");
 
 const accountSchema = new mongoose.Schema({
+
     username: {
-        type: String, 
-        required: true,
-        unique: true
+        type: String,
+        unique: true,
+        sparse: true
     },
+
     password: {
-        type:String,
-        required: true
+        type: String
     },
+
     email: {
         type: String,
         required: true,
         unique: true
     },
+
     name: {
         type: String,
         required: true
     },
+
     phoneNumber: {
         type: String,
-        required: true
+        default: ""
     },
+
     address: {
         type: String,
-        required: true
+        default: ""
+    },
+
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local"
     }
-});
 
-const Account = mongoose.model('Account', accountSchema);
+}, { timestamps: true });
 
-export default Account;
+module.exports = mongoose.model("Account", accountSchema);
