@@ -31,19 +31,30 @@ export const createOrder = async (req, res) => {
     }
 
     try {
-        const newOrder = new Order({
+
+        const newOrder = await Order.create({
             itemId,
             accountId
         });
 
-        await newOrder.save();
-
         res.status(201).json({
             success: true,
+            message: "Item added to cart.",
             data: newOrder
         });
+
     } catch (error) {
+
+        // Duplicate accountId + itemId
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: "Item is already in your cart."
+            });
+        }
+
         console.error("Error creating order:", error.message);
+
         res.status(500).json({
             success: false,
             message: "Server Error"
