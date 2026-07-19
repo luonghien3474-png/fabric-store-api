@@ -7,6 +7,7 @@ const router = express.Router();
 //  ENDPOINTS
 //
 router.get("/", getOrders);
+router.get("/account/:accountId", getOrdersByAccount);
 router.post("/", createOrder);
 router.put("/:id", updateOrder);
 router.delete("/:id", deleteOrder);

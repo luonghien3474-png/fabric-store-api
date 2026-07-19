@@ -20,6 +20,33 @@ export const getOrders = async (req, res) => {
     }
 };
 
+export const getOrdersByAccount = async (req, res) => {
+    const { accountId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid Account Id"
+        });
+    }
+
+    try {
+        const orders = await Order.find({ accountId })
+            .populate("itemId");
+
+        res.status(200).json({
+            success: true,
+            data: orders
+        });
+    } catch (error) {
+        console.error("Error fetching orders:", error.message);
+        res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
+
 export const createOrder = async (req, res) => {
     const { itemId, accountId } = req.body;
 
