@@ -248,8 +248,8 @@ export const checkout = async (req, res) => {
         await Record.create(
             [{
                 data: {
-                    account,
-                    items: orders.map(order => order.itemId)
+                    account: account.toObject(),
+                    items: orders.map(order => order.itemId.toObject())
                 }
             }],
             {
