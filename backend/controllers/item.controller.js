@@ -1,15 +1,37 @@
 import Item from '../models/item.model.js';
 import mongoose from 'mongoose';
-
 export const getItems = async (req, res) => {
     try {
-        const items = await Item.find({});
+        const now = new Date();
+
+        // Reactivate items that have been inactive for 24+ hours
+        await Item.updateMany(
+            {
+                active: false,
+                updatedAt: {
+                    $lte: new Date(now.getTime() - 24 * 60 * 60 * 1000)
+                }
+            },
+            {
+                $set: {
+                    active: true
+                }
+            }
+        );
+
+        // Only return available items
+        const items = await Item.find({
+            active: true
+        });
+
         res.status(200).json({
             success: true,
             data: items
         });
+
     } catch (error) {
         console.error("Error fetching items:", error.message);
+
         res.status(500).json({
             success: false,
             message: "Server Error"
