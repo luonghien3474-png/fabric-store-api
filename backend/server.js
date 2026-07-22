@@ -6,6 +6,7 @@ import postRoutes from "./routes/post.route.js";
 import accountRoutes from "./routes/account.route.js";
 import itemRoutes from "./routes/item.route.js";
 import orderRoutes from "./routes/order.route.js";
+import recordRoutes from "./routes/record.route.js";
 import path from 'path';
 
 dotenv.config();
@@ -37,10 +38,11 @@ app.use(cors({ origin: [
 //              typingtexts -> orders: id
 //              cardarrays -> orders: list of order ids
 //              posts = item: name, price, size, material, description, imageuri
-app.use("/api/posts",postRoutes);
-app.use("/api/accounts",accountRoutes);
-app.use("/api/items",itemRoutes);
-app.use("/api/orders",orderRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/accounts", accountRoutes);
+app.use("/api/items", itemRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/records", recordRoutes);
 
 
 app.listen(PORT, () => {
