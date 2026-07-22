@@ -1,6 +1,5 @@
 import express from "express";
-import { deleteOrder, updateOrder, createOrder, getOrders, getOrdersByAccount } from '../controllers/order.controller.js';
-
+import { deleteOrder, updateOrder, createOrder, getOrders, getOrdersByAccount,checkout } from '../controllers/order.controller.js';
 const router = express.Router();
 
 //
@@ -8,6 +7,7 @@ const router = express.Router();
 //
 router.get("/", getOrders);
 router.get("/account/:accountId", getOrdersByAccount);
+router.post("/checkout", checkout);
 router.post("/", createOrder);
 router.put("/:id", updateOrder);
 router.delete("/:id", deleteOrder);

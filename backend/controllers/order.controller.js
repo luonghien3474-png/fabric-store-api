@@ -1,3 +1,6 @@
+import Account from "../models/account.model.js";
+import Item from "../models/item.model.js";
+import Record from "../models/record.model.js";
 import Order from '../models/order.model.js';
 import mongoose from 'mongoose';
 
@@ -160,5 +163,131 @@ export const deleteOrder = async (req, res) => {
             success: false,
             message: "Server Error"
         });
+    }
+};
+
+//checkout
+export const checkout = async (req, res) => {
+    const { accountId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid Account Id"
+        });
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        // Get account
+        const account = await Account.findById(accountId).session(session);
+
+        if (!account) {
+            await session.abortTransaction();
+            return res.status(404).json({
+                success: false,
+                message: "Account not found"
+            });
+        }
+
+        // Get all orders
+        const orders = await Order.find({ accountId })
+            .populate("itemId")
+            .session(session);
+
+        if (orders.length === 0) {
+            await session.abortTransaction();
+            return res.status(400).json({
+                success: false,
+                message: "Cart is empty."
+            });
+        }
+
+        // Make sure every item is still active
+        for (const order of orders) {
+            if (!order.itemId.active) {
+                await session.abortTransaction();
+
+                return res.status(409).json({
+                    success: false,
+                    message: `${order.itemId.name} is no longer available.`
+                });
+            }
+        }
+
+        // Atomically mark every item as inactive.
+        // If even one fails, rollback.
+        for (const order of orders) {
+
+            const result = await Item.updateOne(
+                {
+                    _id: order.itemId._id,
+                    active: true
+                },
+                {
+                    $set: {
+                        active: false
+                    }
+                },
+                {
+                    session
+                }
+            );
+
+            if (result.modifiedCount !== 1) {
+                throw new Error(
+                    `${order.itemId.name} has already been purchased.`
+                );
+            }
+        }
+
+        // Save purchase record
+        await Record.create(
+            [{
+                data: {
+                    account,
+                    items: orders.map(order => order.itemId)
+                }
+            }],
+            {
+                session
+            }
+        );
+
+        // Empty the cart
+        await Order.deleteMany(
+            {
+                accountId
+            },
+            {
+                session
+            }
+        );
+
+        await session.commitTransaction();
+
+        res.status(200).json({
+            success: true,
+            message: "Checkout successful."
+        });
+
+    } catch (error) {
+
+        await session.abortTransaction();
+
+        console.error("Checkout error:", error.message);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    } finally {
+
+        session.endSession();
+
     }
 };
